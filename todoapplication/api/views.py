@@ -1,15 +1,21 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from django.http import HttpResponseBadRequest
-from todoapplication.models import Task
-from todoapplication.api.serializers import TaskSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.response import Response
+from django.http import Http404
+from todoapplication.models import Task
+from todoapplication.api.serializers import TaskSerializer, get_validation_errors, MyTokenObtainPairSerializer
+from rest_framework import status
+from todoapplication.decorators import group_required
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+@group_required(['TaskUser'])
 def task_list(request):
     user = request.user
     tasks = Task.objects.filter(user_id=user.id)
@@ -20,40 +26,46 @@ def task_list(request):
 
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-def task_create(request):
+@group_required(['TaskUser'])
+def task_save(request):
     serializer = TaskSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(user=request.user)
     else:
-        return HttpResponseBadRequest(serializer.errors)
+        return Response({'validationErrors': get_validation_errors(serializer.errors)},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     return Response(serializer.data)
 
 
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+@group_required(['TaskUser'])
 def task_update(request):
     try:
         task = Task.objects.get(id=request.data['id'])
+    except Task.DoesNotExist:
+        raise Http404()
 
-        serializer = TaskSerializer(instance=task, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-    except:
-        return HttpResponseBadRequest()
+    serializer = TaskSerializer(instance=task, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+    else:
+        return Response({'validationErrors': get_validation_errors(serializer.errors)},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     return Response(serializer.data)
 
 
 @api_view(['DELETE'])
 @authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+@group_required(['TaskUser'])
 def task_delete(request, pk):
     try:
         task = Task.objects.get(id=pk)
-        task.delete()
-    except:
-        return HttpResponseBadRequest()
-    return Response()
+    except Task.DoesNotExist:
+        raise Http404()
+
+    task.delete()
+
+    return Response(task.id)

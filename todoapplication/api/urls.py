@@ -6,7 +6,8 @@ app_name = 'todoapplication'
 
 urlpatterns = [
     path('tasks', views.task_list, name="tasks"),
-    path('createTask', views.task_create, name="taskCreate"),
-    path('saveTask', views.task_update, name="taskUpdate"),
-    path('deleteTask', views.task_delete, name="taskDelete")
+    path('saveTask', views.task_save, name="taskCreate"),
+    path('updateTask', views.task_update, name="taskUpdate"),
+    path('deleteTask/<int:pk>', views.task_delete, name="taskDelete"),
+    path('login', views.MyTokenObtainPairView.as_view(), name="login")
 ]
