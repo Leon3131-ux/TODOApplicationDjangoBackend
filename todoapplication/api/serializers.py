@@ -13,34 +13,34 @@ class TaskSerializer(ModelSerializer):
         extra_kwargs = {
             "description": {
                 "error_messages": {
-                    "null": "description.required",
-                    "blank": "description.required",
-                    "required": "description.required"
+                    "null": "errors.task.description.required",
+                    "blank": "errors.task.description.required",
+                    "required": "errors.task.description.required"
                 }
             },
             "date": {
                 "error_messages": {
-                    "invalid": "date.invalid",
-                    "required": "date.invalid",
-                    "null": "date.invalid"
+                    "invalid": "errors.task.date.invalid",
+                    "required": "errors.task.date.invalid",
+                    "null": "errors.task.date.invalid"
                 }
             },
             "done": {
                 "error_messages": {
-                    "null": "done.required",
+                    "null": "errors.task.done.required",
                 }
             },
             "deleted": {
                 "error_messages": {
-                    "null": "deleted.required"
+                    "null": "errors.task.deleted.required"
                 }
             }
         }
 
     # fields with unique=True require special attention for custom error messages
     title = fields.CharField(
-        validators=[UniqueValidator(queryset=Task.objects.all(), message='title.alreadyUsed')],
-        error_messages={"null": "title.required", "blank": "title.required", "exists": "title.alreadyUsed"}
+        validators=[UniqueValidator(queryset=Task.objects.all(), message='errors.task.title.alreadyUsed')],
+        error_messages={"null": "errors.task.title.required", "blank": "errors.task.title.required", "exists": "errors.task.title.alreadyUsed"}
     )
 
 
