@@ -1,4 +1,5 @@
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.renderers import JSONRenderer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
@@ -72,6 +73,12 @@ def task_delete(request, pk):
     if task.user != request.user:
         return Response(status=status.HTTP_403_FORBIDDEN)
 
+    if not task.deleted:
+        task.deleted = True
+        task.save()
+        serializer = TaskSerializer(task)
+        return Response(serializer.data)
     task.delete()
+    return Response()
 
-    return Response(task.id)
+
