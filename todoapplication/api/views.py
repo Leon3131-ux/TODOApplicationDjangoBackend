@@ -47,6 +47,9 @@ def task_update(request):
     except Task.DoesNotExist:
         raise Http404()
 
+    if task.user != request.user:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
     serializer = TaskSerializer(instance=task, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
@@ -65,6 +68,9 @@ def task_delete(request, pk):
         task = Task.objects.get(id=pk)
     except Task.DoesNotExist:
         raise Http404()
+
+    if task.user != request.user:
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     task.delete()
 
