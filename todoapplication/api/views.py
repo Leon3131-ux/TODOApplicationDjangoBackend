@@ -1,5 +1,4 @@
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.renderers import JSONRenderer
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
